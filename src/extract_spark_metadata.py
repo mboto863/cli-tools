@@ -24,26 +24,36 @@ def extract_spark_metadata(parquet_path: str, output_path: str | None = None) ->
     meta = pq.read_metadata(parquet_path)
 
     key = b"org.apache.spark.sql.parquet.row.metadata"
-    raw_value = meta.metadata.get(key) if meta.metadata else None
+    if key in meta.metadata:
+        raw_value = meta.metadata.get(key)
+        # Parse JSON
+        try:
+            schema = json.loads(raw_value.decode("utf-8"))
+        except json.JSONDecodeError as e:
+            print(f"Error: Could not parse JSON -> {e}", file=sys.stderr)
+            sys.exit(1)
 
-    if raw_value is None:
-        print(
-            "Error: Key 'org.apache.spark.sql.parquet.row.metadata' not found in the file.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        fields = schema.get("fields", [])
+        if not fields:
+            print("Warning: No fields found in the schema.", file=sys.stderr)
+            sys.exit(0)
 
-    # Parse JSON
-    try:
-        schema = json.loads(raw_value.decode("utf-8"))
-    except json.JSONDecodeError as e:
-        print(f"Error: Could not parse JSON -> {e}", file=sys.stderr)
-        sys.exit(1)
+    else:
+        # Read the Parquet file.
+        pf = pq.ParquetFile(parquet_path_object)
+        schema = pf.schema_arrow
 
-    fields = schema.get("fields", [])
-    if not fields:
-        print("Warning: No fields found in the schema.", file=sys.stderr)
-        sys.exit(0)
+        # Extract field information
+        fields = []
+        for field in schema:
+            fields.append(
+                {
+                    "name": field.name,
+                    "type": str(field.type),
+                    "nullable": field.nullable,
+                    "metadata": dict(field.metadata) if field.metadata else None,
+                }
+            )
 
     # Create DataFrame.
     df = pd.DataFrame(fields)
