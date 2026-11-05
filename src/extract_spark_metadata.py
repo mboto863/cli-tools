@@ -8,12 +8,15 @@ Usage:
 import argparse
 import json
 import sys
+import pyarrow.parquet as pq
+import pandas as pd
+from pathlib import Path
 
 
 def extract_spark_metadata(parquet_path: str, output_path: str | None = None) -> None:
-    parquet_path = Path(parquet_path)
+    parquet_path_object = Path(parquet_path)
 
-    if not parquet_path.exists():
+    if not parquet_path_object.exists():
         print(f"Error: File not found -> {parquet_path}", file=sys.stderr)
         sys.exit(1)
 
@@ -47,10 +50,13 @@ def extract_spark_metadata(parquet_path: str, output_path: str | None = None) ->
 
     # Default output name
     if output_path is None:
-        output_path = parquet_path.with_suffix(".spark_metadata.csv")
+        output_path_object = parquet_path_object.with_suffix(".spark_metadata.csv")
 
-    df.to_csv(output_path, index=False)
-    print(f"Saved -> {output_path}")
+    else:
+        output_path_object = Path(output_path)
+
+    df.to_csv(output_path_object, index=False)
+    print(f"Saved -> {output_path_object}")
     print(df.to_string(index=False))
 
 
