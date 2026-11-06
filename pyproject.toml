@@ -8,3 +8,6 @@ dependencies = [
     "pandas>=3.1.1",
     "pyarrow>=26.0.1",
 ]
+
+[project.scripts]
+extract_spark_metadata = "cli_tools.extract_parquet_metadata:main"
