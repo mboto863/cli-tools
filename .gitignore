@@ -1,1 +1,12 @@
-.csv
+*.csv
+pycache/
+*.egg-info/
+*.egg
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+wheels/
