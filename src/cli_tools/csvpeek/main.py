@@ -73,3 +73,61 @@ def print_table(columns: Sequence[str], rows: list[dict]) -> None:
                 str(row.get(column) or "").ljust(widths[column]) for column in columns
             )
         )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Inspect CSV files from the terminal.")
+    parser.add_argument("file", type=Path, help="CSV file to inspect")
+    parser.add_argument(
+        "--columns",
+        action="store_true",
+        help="Display column names",
+    )
+    parser.add_argument(
+        "--sample", type=int, metavar="N", help="Display the first N records"
+    )
+    parser.add_argument(
+        "--count", action="store_true", help="Display the number of data records"
+    )
+
+    args = parser.parse_args()
+
+    if args.sample is not None and args.sample < 0:
+        parser.error("--sample must be zero or greater")
+
+    if not args.file.is_file():
+        print(f"Error: file not found: {args.file}", file=sys.stderr)
+        return 1
+
+    try:
+        columns, row_count, sample = inspect_csv(
+            args.file, sample_size=args.sample if args.sample is not None else 5
+        )
+    except (OSError, UnicodeError, csv.Error, ValueError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+
+    if args.columns:
+        print("\n".join(columns))
+        return 0
+
+    if args.count:
+        print(row_count)
+        return 0
+
+    print(f"File: {args.file}")
+    print(f"Columns: {len(columns)}")
+    print(f"Rows: {row_count}")
+
+    print("\nColumn names:")
+    for column in columns:
+        print(f"  - {column}")
+
+    print("\nSample:")
+    print_table(columns, sample)
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
