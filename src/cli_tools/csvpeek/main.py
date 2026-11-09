@@ -75,7 +75,7 @@ def print_table(columns: Sequence[str], rows: list[dict]) -> None:
         )
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="Inspect CSV files from the terminal.")
     parser.add_argument("file", type=Path, help="CSV file to inspect")
     parser.add_argument(
