@@ -1,6 +1,6 @@
 [project]
 name = "cli-tools"
-version = "0.1.0"
+version = "0.2.0"
 description = "My cli tools."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -11,3 +11,5 @@ dependencies = [
 
 [project.scripts]
 extract_spark_metadata = "cli_tools.extract_parquet_metadata:main"
+csvpeek = "cli_tools.csvpeek:main"
+
