@@ -1,7 +1,6 @@
 import argparse
 import csv
 import sys
-from typing import Literal
 from pathlib import Path
 from collections.abc import Sequence
 
@@ -44,3 +43,33 @@ def inspect_csv(
                 sample.append(row)
 
         return columns, row_count, sample
+
+
+def print_table(columns: Sequence[str], rows: list[dict]) -> None:
+    """Print records in a simple, aligned table."""
+    if not rows:
+        print("No records found")
+        return
+
+    # Get the widths of each column, as the max between the width of the header
+    # and the width of each value.
+    widths = {
+        column: max(
+            len(column),
+            *(len(str(row.get(column) or "")) for row in rows),
+        )
+        for column in columns
+    }
+
+    header = " | ".join(column.ljust(widths[column]) for column in columns)
+    separator = "-+-".join("-" * widths[column] for column in columns)
+
+    print(header)
+    print(separator)
+
+    for row in rows:
+        print(
+            " | ".join(
+                str(row.get(column) or "").ljust(widths[column]) for column in columns
+            )
+        )
